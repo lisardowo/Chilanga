@@ -1,0 +1,11 @@
+[package]
+name = "Chilanga"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+
+[[bin]]
+name = "chilanga"
+path = "main.rs"
