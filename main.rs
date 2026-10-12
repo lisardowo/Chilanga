@@ -19,10 +19,9 @@ impl lexer {
         }
     }
 
-    fn process() {
-        let file = File::open("wordlist.txt"); //TODO replace to get the file from main
+    fn process(self) {
+        let file = File::open("wordlist.txt").expect("Failed to open file"); //TODO replace to get the file from main
         let reader = BufReader::new(file);
-
         let mut chars = reader.bytes();
 
         loop {
@@ -41,6 +40,11 @@ impl lexer {
             }
         }
     }
+
+    fn add(self) {}
 }
 
-fn main() -> io::Result<()> {}
+fn main() {
+    let newlexer = lexer::new("for", vec!["for"]);
+    newlexer.process();
+}
