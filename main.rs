@@ -2,6 +2,8 @@ use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{self, BufReader, Read};
 
+const keywords = ["for", "if", "else"]
+
 struct lexer {
     currentState: String,
     initialState: String,
@@ -15,7 +17,7 @@ impl lexer {
         lexer {
             currentState: initial.to_string(),
             initialState: initial.to_string(),
-            acceptStates: accepts.into_iter().map(String::from).collect(),
+            acceptStates: keywords.iter().map(|&s| s.to_string()).collect(),
             debug: Vec::new(),
             transitions: HashMap::new(),
         }
@@ -29,7 +31,18 @@ impl lexer {
         loop {
             if let Some(nextByte) = chars.next() {
                 match nextByte {
-                    Ok(c) => self.currentState.push(c as char),
+                    Ok(c) => {
+                        
+                        let mut stateNow = self.currentState;
+
+                        stateNow.push(c as char);
+                        
+                        if self.acceptStates.contains(&stateNow){
+                            println!("contain");
+                        }
+
+                    }
+                    ,
                     Err(e) => {
                         println! {"[DEBUG] Error: {}", e}
                     }
@@ -42,7 +55,16 @@ impl lexer {
         }
     }
 
-    fn add() {}
+    fn cleanBuffer(self, bool hasMatch){
+
+        if hasMatch == true{
+
+        self.currentState = ""
+
+        }
+
+    }
+    fn add(self) {}
 }
 
 fn main() {
