@@ -1,8 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
-use std::io::{self, BufReader, Read};
-
-const keywords = ["for", "if", "else"]
+use std::io::{BufReader, Read};
 
 struct lexer {
     currentState: String,
@@ -13,49 +11,82 @@ struct lexer {
 }
 
 impl lexer {
-    fn new(initial: &str, accepts: Vec<&str>) -> Self {
+    fn new(initial: &str) -> Self {
+        const KEYWORDS: [&str; 3] = ["for", "if", "else"];
         lexer {
             currentState: initial.to_string(),
             initialState: initial.to_string(),
-            acceptStates: keywords.iter().map(|&s| s.to_string()).collect(),
+            acceptStates: KEYWORDS.iter().map(|s| s.to_string()).collect(),
             debug: Vec::new(),
             transitions: HashMap::new(),
         }
     }
 
     fn process(&mut self) -> Vec<String> {
-        let file = File::open("wordlist.txt").expect("Failed to open file"); //TODO replace to get the file from main
+        let file = File::open("wordlist.txt").expect("Failed to open file");
         let reader = BufReader::new(file);
         let mut chars = reader.bytes();
 
-        loop {
-            if let Some(nextByte) = chars.next() {
-                match nextByte {
-                    Ok(c) => {
-                        
-                        let mut stateNow = self.currentState;
+        let mut foundTokens = Vec::new();
+        self.currentState.clear();
 
-                        stateNow.push(c as char);
-                        
-                        if self.acceptStates.contains(&stateNow){
-                            println!("contain");
+        loop {
+            match chars.next() {
+                Some(Ok(c)) => {
+                    let ch = c as char;
+
+                    if ch.is_whitespace() || "(){};<>+-=".contains(ch) {
+                        if !self.currentState.is_empty() {
+                            self.evaluate_current_state(&mut foundTokens);
                         }
 
+                        if !ch.is_whitespace() {
+                            println!("Recognized Symbol: {}", ch);
+                            foundTokens.push(ch.to_string());
+                        }
+
+                        continue;
                     }
-                    ,
-                    Err(e) => {
-                        println! {"[DEBUG] Error: {}", e}
-                    }
+
+                    self.currentState.push(ch);
+                    //TODO check for puntuaction
                 }
-            } else {
-                println!("Reader empty");
-                return vec![String::from("Debug")];
-                //break;
+                Some(Err(e)) => {
+                    println!("[DEBUG] Error: {}", e);
+                }
+                None => {
+                    // End of file: process whatever is left in the buffer
+                    if !self.currentState.is_empty() {
+                        self.evaluate_current_state(&mut foundTokens);
+                    }
+                    println!("Reader empty");
+                    break;
+                }
             }
         }
+
+        foundTokens
     }
 
-    fn cleanBuffer(self, bool hasMatch){
+    // Helper function to decide what the accumulated string actually is
+    fn evaluate_current_state(&mut self, foundTokens: &mut Vec<String>) {
+        if self.acceptStates.contains(&self.currentState) {
+            // It's a recognized keyword
+            println!("Recognized Keyword: {}", self.currentState);
+            foundTokens.push(self.currentState.clone());
+            self.debug.push(self.currentState.clone());
+        } else {
+            // It's NOT in the wordlist, but it's still a word the developer wrote
+
+            println!("Recognized Identifier/Literal: {}", self.currentState);
+            self.debug
+                .push(format!("IDENTIFIER: {}", self.currentState));
+        }
+        self.currentState.clear(); // Cleaning the buffer 
+    }
+    /*
+    * Chilanga -> agregar "queti", para decirle al compilador que salte un fragmento de colido (debug)
+    * fn cleanBuffer(self, bool hasMatch){
 
         if hasMatch == true{
 
@@ -63,12 +94,12 @@ impl lexer {
 
         }
 
-    }
+    } */
     fn add(self) {}
 }
 
 fn main() {
-    let mut newlexer = lexer::new("for", vec!["for"]);
+    let mut newlexer = lexer::new("");
     newlexer.process();
     println!("{}", newlexer.currentState)
 }
