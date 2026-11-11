@@ -1,16 +1,18 @@
-mod lexer;
+mod rewroteL;
 
-use lexer::dfa;
+use rewroteL::Lexer;
 
-struct ast {}
+use std::fs;
 
-fn main() {
-    println!(
-        "Using hardocded test file, for production change process ln 26 for a way to get user input from binary call"
-    );
-    let mut newlexer = dfa::new("");
-    newlexer.process();
-    for token in newlexer.debug.iter() {
-        println!("lexer arrays {}", token);
+fn main() -> std::io::Result<()> {
+    let source = fs::read_to_string("sampleCode.c")?;
+
+    for token in Lexer::new().tokenize(&source) {
+        println!(
+            "{:>3}:{:<3} {:<12} {:?}",
+            token.line, token.column, token.lexeme, token.token_type
+        );
     }
+
+    Ok(())
 }
