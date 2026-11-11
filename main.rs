@@ -1,6 +1,6 @@
-mod rewroteL;
+mod lexer;
 
-use rewroteL::Lexer;
+use lexer::Lexer;
 
 use std::fs;
 
